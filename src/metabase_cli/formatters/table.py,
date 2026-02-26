@@ -1,0 +1,64 @@
+import re
+from typing import Any, Dict, List, Optional
+from rich.console import Console
+from rich.table import Table
+from metabase_cli.formatters.base import BaseFormatter
+class TableFormatter(BaseFormatter):
+    """Format output as pretty Rich tables for humans."""
+    
+    def __init__(self):
+        self.console = Console()
+    
+    def _strip_ansi(self, text: str) -> str:
+        """Remove ANSI escape sequences from text."""
+        ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
+        return ansi_escape.sub('', text)
+    
+    def format_dict(self, data: Dict[str, Any], title: Optional[str] = None) -> str:
+        """Format a dictionary as a clean table."""
+        table = Table(title=title)
+        table.add_column("Property", style="")
+        table.add_column("Value", style="")
+        
+        for key, value in data.items():
+            table.add_row(str(key), str(value))
+        
+        with self.console.capture() as capture:
+            self.console.print(table, highlight=False)
+        
+        return self._strip_ansi(capture.get())
+    
+    def format_list(self, data: List[Dict[str, Any]], title: Optional[str] = None) -> str:
+        """Format a list of dictionaries as a table."""
+        if not data:
+            return "No data found."
+        
+        table = Table(title=title)
+        
+        first_item = data[0]
+        for key in first_item.keys():
+            table.add_column(str(key), style="")
+        
+        for item in data:
+            row_values = [str(item.get(k, "")) for k in first_item.keys()]
+            table.add_row(*row_values)
+        
+        with self.console.capture() as capture:
+            self.console.print(table, highlight=False)
+        
+        return self._strip_ansi(capture.get())
+    
+    def format_error(self, error: Dict[str, Any]) -> str:
+        """Format an error as a table."""
+        table = Table(title="Error")
+        table.add_column("Property", style="")
+        table.add_column("Value", style="")
+        
+        for key, value in error.items():
+            table.add_row(str(key), str(value))
+        
+        with self.console.capture() as capture:
+            self.console.print(table, highlight=False)
+        
+        return self._strip_ansi(capture.get())
+    

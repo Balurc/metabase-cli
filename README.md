@@ -1,6 +1,6 @@
 # Metabase CLI
 
-> A command-line interface for [Metabase](https://www.metabase.com/).
+> A type-safe command-line interface for [Metabase](https://www.metabase.com/).
 
 ---
 
@@ -18,7 +18,7 @@
 
 ```bash
 # Clone the repository
-git clone [https://github.com/YOUR_USERNAME/metabase-cli.git](https://github.com/Balurc/metabase-cli.git)
+git clone https://github.com/YOUR_USERNAME/metabase-cli.git
 cd metabase-cli
 
 # Install dependencies with uv
@@ -42,10 +42,38 @@ METABASE_API_KEY=your_api_key_here
 
 ## 🚀 Usage
 
+### Health Check
+
 ```bash
-# Check Metabase health
+# Check Metabase health (default table format)
 metabase-cli health check
 
+# JSON output for agents/scripts
+metabase-cli health check --format json
+```
+
+**Example JSON output:**
+
+```json
+{
+  "status": "ok",
+  "url": "http://localhost:3000/api",
+  "timestamp": "2026-02-25T12:00:00Z",
+  "response_time_ms": 45
+}
+```
+
+### Output Formats
+
+All commands support multiple output formats via the `--format` flag:
+
+| Flag | Description |
+|------|-------------|
+| `--format table` | Pretty tables for humans *(default)* |
+| `--format json` | Structured JSON for agents and automation |
+| `--format csv` | CSV for data export *(where applicable)* |
+
+```bash
 # See all commands
 metabase-cli --help
 ```

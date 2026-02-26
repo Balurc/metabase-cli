@@ -1,0 +1,27 @@
+import json
+from typing import Any, Dict, List, Optional
+from metabase_cli.formatters.base import BaseFormatter
+
+
+class JSONFormatter(BaseFormatter):
+    """Format output as JSON for agents and programmatic use."""
+
+    def __init__(self, indent: int = 2):
+        self.indent = indent
+
+    def format_dict(self, data: Dict[str, Any], title: Optional[str] = None) -> str:
+        """Format a dictionary as JSON."""
+        # Remove None values for cleaner output
+        clean_data = {k: v for k, v in data.items() if v is not None}
+        return json.dumps(clean_data, indent=self.indent, default=str)
+
+    def format_list(
+        self, data: List[Dict[str, Any]], title: Optional[str] = None
+    ) -> str:
+        """Format a list as JSON."""
+        return json.dumps(data, indent=self.indent, default=str)
+
+    def format_error(self, error: Dict[str, Any]) -> str:
+        """Format an error as JSON."""
+        error_wrapper = {"error": error}
+        return json.dumps(error_wrapper, indent=self.indent, default=str)
