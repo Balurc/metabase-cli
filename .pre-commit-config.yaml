@@ -13,7 +13,7 @@ repos:
         language: system
         types: [python]
         pass_filenames: false
-        args: [src/metabase_cli]
+        args: [src/mbase]
       - id: pytest
         name: pytest
         entry: pytest

@@ -1,6 +1,8 @@
-from metabase_cli.formatters.base import BaseFormatter, OutputFormat
-from metabase_cli.formatters.table import TableFormatter
-from metabase_cli.formatters.json import JSONFormatter
+"""Output formatters for mbase CLI."""
+
+from mbase.formatters.base import BaseFormatter, OutputFormat
+from mbase.formatters.table import TableFormatter
+from mbase.formatters.json import JSONFormatter
 
 
 def get_formatter(format_type: OutputFormat) -> BaseFormatter:
