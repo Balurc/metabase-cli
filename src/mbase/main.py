@@ -2,7 +2,7 @@
 
 import typer
 from rich.console import Console
-from mbase.commands import auth, config
+from mbase.commands import auth, config, database
 
 app = typer.Typer(
     name="mbase",
@@ -13,6 +13,7 @@ console = Console()
 # Add subcommands
 app.add_typer(auth.app, name="auth", help="Authentication commands")
 app.add_typer(config.app, name="config", help="Configuration commands")
+app.add_typer(database.app, name="database", help="Database operations")
 # Add direct commands
 app.command()(auth.login)
 app.command()(auth.logout)
