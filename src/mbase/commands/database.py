@@ -75,5 +75,73 @@ def list(
         raise typer.Exit(1)
 
 
+@app.command()
+def tables(
+    database_id: int = typer.Argument(..., help="Database ID"),
+    format: OutputFormat = typer.Option(
+        OutputFormat.TABLE,
+        "--format",
+        "-f",
+        help="Output format",
+    ),
+):
+    """List all tables in a database."""
+    try:
+        api = DatabasesAPI()
+        tables = api.list_tables(database_id)
+
+        if not tables:
+            console.print(
+                f"[yellow]No tables found in database {database_id}.[/yellow]"
+            )
+            return
+
+        formatter = get_formatter(format)
+
+        if format == OutputFormat.JSON:
+            # Output as JSON array with all fields
+            output = [table.model_dump() for table in tables]
+            console.print(formatter.format_list(output))
+        else:
+            # Get database name for title
+            try:
+                db = api.get_database(database_id)
+                db_name = db.name
+            except Exception:
+                db_name = f"ID: {database_id}"
+
+            # Table format with 6 columns
+            table_view = Table(title=f"Tables in {db_name}")
+            table_view.add_column("ID", style="cyan", justify="right", width=4)
+            table_view.add_column("Name", style="green", width=15)
+            table_view.add_column("Display Name", style="blue", width=15)
+            table_view.add_column("Schema", style="yellow", width=10)
+            table_view.add_column("Active", style="magenta", width=6)
+            table_view.add_column("Last Updated", style="dim", width=19)
+
+            for table in tables:
+                # Format updated_at datetime
+                updated = "N/A"
+                if table.updated_at:
+                    updated = table.updated_at.strftime("%Y-%m-%d %H:%M")
+
+                table_view.add_row(
+                    str(table.id),
+                    table.name[:15] if len(table.name) > 15 else table.name,
+                    table.display_name[:15]
+                    if len(table.display_name) > 15
+                    else table.display_name,
+                    table.schema_name or "N/A",
+                    "Yes" if table.active else "No",
+                    updated,
+                )
+
+            console.print(table_view)
+
+    except Exception as e:
+        console.print(f"[red]Error: {e}[/red]")
+        raise typer.Exit(1)
+
+
 if __name__ == "__main__":
     app()

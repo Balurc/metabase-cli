@@ -83,3 +83,71 @@ def test_database_list_empty(mock_databases_api):
 
     assert result.exit_code == 0
     assert "No databases found" in result.output
+
+
+def test_database_tables_table(mock_databases_api):
+    """Test database tables list in table format."""
+    mock_table = Mock()
+    mock_table.id = 1
+    mock_table.name = "orders"
+    mock_table.display_name = "Orders"
+    mock_table.schema_name = "public"
+    mock_table.active = True
+    mock_table.updated_at = None
+
+    mock_databases_api.list_tables.return_value = [mock_table]
+
+    result = runner.invoke(app, ["database", "tables", "1"])
+
+    assert result.exit_code == 0
+    assert "orders" in result.output
+    assert "public" in result.output
+
+
+def test_database_tables_json(mock_databases_api):
+    """Test database tables list in JSON format."""
+    mock_table = Mock()
+    mock_table.id = 1
+    mock_table.name = "orders"
+    mock_table.display_name = "Orders"
+    mock_table.schema_name = "public"
+    mock_table.active = True
+    mock_table.entity_type = "entity/TransactionTable"
+    mock_table.db_id = 1
+    mock_table.is_writable = True
+    mock_table.model_dump.return_value = {
+        "id": 1,
+        "name": "orders",
+        "display_name": "Orders",
+        "entity_type": "entity/TransactionTable",
+        "db_id": 1,
+        "is_writable": True,
+    }
+
+    mock_databases_api.list_tables.return_value = [mock_table]
+
+    result = runner.invoke(app, ["database", "tables", "1", "--format", "json"])
+
+    assert result.exit_code == 0
+    assert '"entity_type"' in result.output
+    assert '"db_id"' in result.output
+    assert '"is_writable"' in result.output
+
+
+def test_database_tables_empty(mock_databases_api):
+    """Test database tables when no tables found."""
+    mock_databases_api.list_tables.return_value = []
+
+    result = runner.invoke(app, ["database", "tables", "1"])
+
+    assert result.exit_code == 0
+    assert "No tables found" in result.output
+
+
+def test_database_tables_invalid_db(mock_databases_api):
+    """Test database tables with invalid database ID."""
+    mock_databases_api.list_tables.side_effect = Exception("Database not found")
+
+    result = runner.invoke(app, ["database", "tables", "999"])
+
+    assert result.exit_code == 1
