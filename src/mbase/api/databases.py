@@ -1,9 +1,10 @@
 """Database API operations."""
 
-from typing import List
+from typing import List, Dict, Any
 from mbase.client import get_client
 from mbase.models.database import Database
 from mbase.models.table import Table
+from mbase.models.field import TableField
 
 
 class DatabasesAPI:
@@ -37,3 +38,35 @@ class DatabasesAPI:
         tables_data.sort(key=lambda x: x.get("id", 0))
 
         return [Table.model_validate(table) for table in tables_data]
+
+    def get_table_metadata(self, table_id: int) -> Dict[str, Any]:
+        """Get complete table metadata including fields."""
+        response = self.client.get(f"/table/{table_id}/query_metadata")
+
+        # Extract fields and sort by position
+        fields_data = response.get("fields", [])
+        fields_data.sort(key=lambda x: x.get("position", 0))
+
+        # Convert fields to Field models
+        fields = [TableField.model_validate(f) for f in fields_data]
+
+        # Return structured data
+        return {
+            "table": {
+                "id": response.get("id"),
+                "name": response.get("name"),
+                "display_name": response.get("display_name"),
+                "schema_name": response.get("schema"),
+                "data_layer": response.get("data_layer"),
+                "description": response.get("description"),
+                "active": response.get("active", True),
+                "view_count": response.get("view_count", 0),
+                "created_at": response.get("created_at"),
+                "updated_at": response.get("updated_at"),
+                "db_id": response.get("db_id"),
+                "db_name": response.get("db", {}).get("name"),
+                "db_engine": response.get("db", {}).get("engine"),
+            },
+            "fields": fields,
+            "fields_count": len(fields),
+        }
