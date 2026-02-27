@@ -1,7 +1,7 @@
 """Database models for Metabase."""
 
 from datetime import datetime
-from typing import Optional
+from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, Field
 
 
@@ -21,6 +21,18 @@ class Database(BaseModel):
     )
     timezone: Optional[str] = Field(default=None, description="Database timezone")
     is_full_sync: bool = Field(default=True, description="Is schema fully synced")
+
+    # New fields for AI agents
+    features: Optional[List[str]] = Field(
+        default=None, description="Supported SQL features"
+    )
+    dbms_version: Optional[Dict[str, Any]] = Field(
+        default=None, description="Database version info"
+    )
+    caveats: Optional[str] = Field(default=None, description="Warnings or limitations")
+    points_of_interest: Optional[str] = Field(
+        default=None, description="Notable features or data"
+    )
 
     @property
     def display_type(self) -> str:

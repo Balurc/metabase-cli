@@ -32,23 +32,40 @@ def list(
         formatter = get_formatter(format)
 
         if format == OutputFormat.JSON:
-            # Output as JSON array
+            # Output as JSON array with all fields
             output = [db.model_dump() for db in databases]
             console.print(formatter.format_list(output))
         else:
-            # Table format
+            # Table format with all columns
             table = Table(title="Databases")
             table.add_column("ID", style="cyan", justify="right")
             table.add_column("Name", style="green")
             table.add_column("Engine", style="blue")
             table.add_column("Type", style="yellow")
+            table.add_column("Description", style="magenta", max_width=30)
+            table.add_column("Created", style="dim")
+            table.add_column("Updated", style="dim")
 
             for db in databases:
+                # Truncate description
+                desc = db.description or ""
+                if len(desc) > 27:
+                    desc = desc[:27] + "..."
+                elif not desc:
+                    desc = "N/A"
+
+                # Format dates
+                created = db.created_at.strftime("%Y-%m-%d") if db.created_at else "N/A"
+                updated = db.updated_at.strftime("%Y-%m-%d") if db.updated_at else "N/A"
+
                 table.add_row(
                     str(db.id),
                     db.name,
                     db.engine,
                     db.display_type,
+                    desc,
+                    created,
+                    updated,
                 )
 
             console.print(table)
